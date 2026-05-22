@@ -20,6 +20,7 @@ import {
   Globe,
   PanelLeftClose,
   PanelLeftOpen,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -31,6 +32,8 @@ import {
   uid,
 } from "@/lib/chat-store";
 import { DEFAULT_PERSONA, PERSONAS, personaById } from "@/lib/personas";
+import { UserMenu } from "@/components/UserMenu";
+import { exportConversationToPdf } from "@/lib/pdf-export";
 
 export function ChatApp() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -278,9 +281,9 @@ export function ChatApp() {
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-bold tracking-tight">FlowZint AI</div>
+              <div className="text-sm font-bold tracking-tight">FlowZint</div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                Support Suite
+                Support
               </div>
             </div>
           </div>
@@ -388,9 +391,9 @@ export function ChatApp() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                Gemini · Live
+                Online
               </span>
-              <span className="text-[10px] text-muted-foreground">v2.6</span>
+              <span className="text-[10px] text-muted-foreground">v1.0</span>
             </div>
           </div>
         </div>
