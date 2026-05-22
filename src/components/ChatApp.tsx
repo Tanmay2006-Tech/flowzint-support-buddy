@@ -427,10 +427,23 @@ export function ChatApp() {
               </div>
             </div>
           </div>
-          <div className="hidden items-center gap-1.5 sm:flex">
-            <Pill icon={<ShieldCheck className="h-3 w-3" />}>End-to-end secure</Pill>
-            <Pill icon={<Globe className="h-3 w-3" />}>24/7</Pill>
-            <Pill icon={<Cpu className="h-3 w-3" />}>Gemini 3 Flash</Pill>
+          <div className="flex items-center gap-1.5">
+            <Pill icon={<ShieldCheck className="h-3 w-3" />}>Secure</Pill>
+            <button
+              onClick={() => {
+                if (!active || active.messages.length === 0) {
+                  toast.error("Nothing to export yet");
+                  return;
+                }
+                exportConversationToPdf(active);
+                toast.success("PDF downloaded");
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-[var(--surface-2)] hover:text-foreground"
+              title="Export conversation as PDF"
+            >
+              <Download className="h-3 w-3" /> Export PDF
+            </button>
+            <UserMenu />
           </div>
         </header>
 
@@ -519,7 +532,7 @@ export function ChatApp() {
               Press <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">Enter</kbd> to send ·{" "}
               <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">Shift+Enter</kbd> for newline
             </span>
-            <span>FlowZint AI may produce inaccurate info. Verify critical actions.</span>
+            <span>Responses can be imperfect — please verify critical actions.</span>
           </div>
         </div>
       </main>
@@ -571,14 +584,14 @@ function EmptyState({
       <div className="flex flex-col items-center text-center animate-fade-up">
         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-[var(--surface-1)] px-3 py-1 text-[11px] font-medium text-muted-foreground">
           <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
-          Built for FlowZint AI Hackathon 2026
+          A calmer way to do customer support
         </div>
         <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
-          The <span className="text-gradient">customer-support brain</span> for modern teams.
+          Your <span className="text-gradient">support workspace</span>, refined.
         </h1>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
-          Four specialist agents, one conversation. Streaming answers, deep
-          context memory, and human-handoff when it matters.
+          Specialist agents, streaming answers, persistent history, and one-click
+          PDF exports — all in one minimal workspace.
         </p>
       </div>
 
