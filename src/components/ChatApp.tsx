@@ -16,8 +16,6 @@ import {
   Check,
   Headphones,
   ShieldCheck,
-  Cpu,
-  Globe,
   PanelLeftClose,
   PanelLeftOpen,
   Download,
