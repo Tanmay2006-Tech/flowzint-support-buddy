@@ -6,17 +6,17 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "FlowZint AI — Intelligent Customer Support, Reimagined" },
+      { title: "FlowZint Support — Modern customer support, reimagined" },
       {
         name: "description",
         content:
-          "Premium AI-powered support suite with specialist agents, streaming replies, and human-handoff. Built for the FlowZint AI Hackathon 2026.",
+          "A minimal customer support workspace with specialist agents, streaming replies, and one-click PDF export.",
       },
-      { property: "og:title", content: "FlowZint AI Support Suite" },
+      { property: "og:title", content: "FlowZint Support" },
       {
         property: "og:description",
         content:
-          "Four specialist AI agents, one conversation. Streaming, context-aware, and SaaS-grade.",
+          "Specialist agents, instant streaming, and persistent conversation history.",
       },
     ],
   }),
