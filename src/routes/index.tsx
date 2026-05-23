@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <>
-      <Toaster position="top-center" richColors theme="dark" />
+      <Toaster position="top-center" richColors />
       <ChatApp />
     </>
   );

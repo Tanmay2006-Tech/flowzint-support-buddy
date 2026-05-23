@@ -19,12 +19,22 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Download,
+  Pin,
+  PinOff,
+  FileText,
+  FileDown,
+  Sun,
+  Moon,
+  Command,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Conversation,
   Msg,
+  conversationToMarkdown,
   deriveTitle,
+  downloadText,
   loadAll,
   saveAll,
   uid,
@@ -32,6 +42,9 @@ import {
 import { DEFAULT_PERSONA, PERSONAS, personaById } from "@/lib/personas";
 import { UserMenu } from "@/components/UserMenu";
 import { exportConversationToPdf } from "@/lib/pdf-export";
+import { useTheme } from "@/lib/use-theme";
+
+const MAX_CHARS = 4000;
 
 export function ChatApp() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -42,18 +55,21 @@ export function ChatApp() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState({ totalMessages: 0, avgLatency: 0, totalConvos: 0 });
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { theme, toggle: toggleTheme } = useTheme();
 
-  // Hydrate from localStorage
+  // Hydrate
   useEffect(() => {
     const list = loadAll();
     setConversations(list);
     if (list.length) setActiveId(list[0].id);
   }, []);
 
-  // Persist
+  // Persist + stats
   useEffect(() => {
     if (conversations.length || loadAll().length) saveAll(conversations);
     const totalMessages = conversations.reduce((a, c) => a + c.messages.length, 0);
@@ -70,7 +86,15 @@ export function ChatApp() {
     [active, personaId],
   );
 
-  // Autoscroll on new messages
+  // Autosize textarea
+  useEffect(() => {
+    const ta = inputRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 176) + "px";
+  }, [input]);
+
+  // Autoscroll
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
@@ -78,10 +102,37 @@ export function ChatApp() {
     });
   }, [active?.messages.length, isLoading]);
 
-  const filteredConvos = useMemo(() => {
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      } else if (mod && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        newConversation();
+      } else if (mod && e.key === "/") {
+        e.preventDefault();
+        setSidebarOpen((v) => !v);
+      } else if (e.key === "Escape") {
+        setPaletteOpen(false);
+        setExportOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personaId]);
+
+  const sortedConvos = useMemo(() => {
+    const list = [...conversations].sort((a, b) => {
+      if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+      return b.updatedAt - a.updatedAt;
+    });
     const q = search.trim().toLowerCase();
-    if (!q) return conversations;
-    return conversations.filter(
+    if (!q) return list;
+    return list.filter(
       (c) =>
         c.title.toLowerCase().includes(q) ||
         c.messages.some((m) => m.content.toLowerCase().includes(q)),
@@ -110,6 +161,12 @@ export function ChatApp() {
     if (activeId === id) setActiveId(null);
   }
 
+  function togglePin(id: string) {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, pinned: !c.pinned } : c)),
+    );
+  }
+
   function updateActive(updater: (c: Conversation) => Conversation) {
     setConversations((prev) =>
       prev.map((c) => (c.id === activeId ? updater(c) : c)),
@@ -134,16 +191,23 @@ export function ChatApp() {
   async function send(text: string, opts?: { regenerate?: boolean }) {
     const content = text.trim();
     if ((!content && !opts?.regenerate) || isLoading) return;
+    if (content.length > MAX_CHARS) {
+      toast.error(`Message is too long (${content.length}/${MAX_CHARS}).`);
+      return;
+    }
 
     const convo = ensureActive();
     const p = personaById(convo.personaId);
 
     let nextMessages: Msg[];
     if (opts?.regenerate) {
-      // drop last assistant if present
       const trimmed = [...convo.messages];
       while (trimmed.length && trimmed[trimmed.length - 1].role === "assistant") {
         trimmed.pop();
+      }
+      if (trimmed.length === 0) {
+        toast.error("Nothing to regenerate yet.");
+        return;
       }
       nextMessages = trimmed;
     } else {
@@ -211,11 +275,11 @@ export function ChatApp() {
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let done = false;
+      let streamDone = false;
 
-      while (!done) {
-        const { done: streamDone, value } = await reader.read();
-        if (streamDone) break;
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
         buffer += decoder.decode(value, { stream: true });
         let nl: number;
         while ((nl = buffer.indexOf("\n")) !== -1) {
@@ -225,7 +289,7 @@ export function ChatApp() {
           if (!line.startsWith("data: ")) continue;
           const json = line.slice(6).trim();
           if (json === "[DONE]") {
-            done = true;
+            streamDone = true;
             break;
           }
           try {
@@ -261,8 +325,32 @@ export function ChatApp() {
     setIsLoading(false);
   }
 
+  function exportPdf() {
+    if (!active || active.messages.length === 0) {
+      toast.error("Nothing to export yet");
+      return;
+    }
+    exportConversationToPdf(active);
+    toast.success("PDF downloaded");
+    setExportOpen(false);
+  }
+
+  function exportMarkdown() {
+    if (!active || active.messages.length === 0) {
+      toast.error("Nothing to export yet");
+      return;
+    }
+    const md = conversationToMarkdown(active);
+    const safe = active.title.replace(/[^\w\d-]+/g, "-").toLowerCase();
+    downloadText(`${safe || "conversation"}.md`, md, "text/markdown");
+    toast.success("Markdown downloaded");
+    setExportOpen(false);
+  }
+
   const messages = active?.messages ?? [];
   const isEmpty = messages.length === 0;
+  const charCount = input.length;
+  const overLimit = charCount > MAX_CHARS;
 
   return (
     <div className="flex h-screen w-full overflow-hidden text-foreground">
@@ -273,77 +361,72 @@ export function ChatApp() {
         } shrink-0 overflow-hidden border-r border-border bg-[var(--sidebar)] transition-[width] duration-300 ease-out`}
       >
         <div className="flex h-full w-72 flex-col">
-          {/* Brand */}
           <div className="flex items-center gap-2.5 px-4 py-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-aurora shadow-glow">
-              <Sparkles className="h-4 w-4 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-bold tracking-tight">FlowZint</div>
+              <div className="text-sm font-semibold tracking-tight">FlowZint</div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                 Support
               </div>
             </div>
           </div>
 
-          {/* New chat */}
           <div className="px-3">
             <button
               onClick={() => newConversation()}
-              className="group flex w-full items-center justify-between rounded-xl bg-gradient-primary px-3.5 py-2.5 text-sm font-medium text-primary-foreground shadow-elegant transition hover:brightness-110"
+              className="group flex w-full items-center justify-between rounded-lg bg-gradient-primary px-3.5 py-2.5 text-sm font-medium text-primary-foreground shadow-elegant transition hover:brightness-110"
             >
               <span className="flex items-center gap-2">
                 <Plus className="h-4 w-4" /> New conversation
               </span>
-              <kbd className="rounded-md bg-black/20 px-1.5 py-0.5 text-[10px] font-mono">
-                ⌘N
-              </kbd>
+              <kbd className="rounded bg-black/25 px-1.5 py-0.5 text-[10px] font-mono">⌘N</kbd>
             </button>
           </div>
 
-          {/* Search */}
           <div className="px-3 pt-3">
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5">
-              <Search className="h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search history"
-                className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
-              />
-            </div>
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-muted-foreground transition hover:bg-[var(--surface-2)]"
+            >
+              <span className="flex items-center gap-2">
+                <Search className="h-3.5 w-3.5" /> Quick search…
+              </span>
+              <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
+            </button>
           </div>
 
-          {/* History */}
           <div className="mt-4 flex-1 overflow-y-auto px-2">
             <div className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Recent
             </div>
-            {filteredConvos.length === 0 ? (
+            {sortedConvos.length === 0 ? (
               <div className="px-3 py-6 text-center text-xs text-muted-foreground">
                 No conversations yet.
               </div>
             ) : (
               <ul className="space-y-0.5">
-                {filteredConvos.map((c) => {
+                {sortedConvos.map((c) => {
                   const p = personaById(c.personaId);
                   const isActive = c.id === activeId;
                   return (
                     <li key={c.id}>
-                      <button
+                      <div
                         onClick={() => setActiveId(c.id)}
-                        className={`group flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left transition ${
+                        className={`group flex w-full cursor-pointer items-start gap-2 rounded-lg px-2.5 py-2 text-left transition ${
                           isActive
-                            ? "bg-[var(--surface-2)]"
+                            ? "bg-[var(--surface-2)] ring-1 ring-primary/20"
                             : "hover:bg-[var(--surface-1)]"
                         }`}
                       >
-                        <span className="mt-0.5 text-base leading-none">
-                          {p.emoji}
-                        </span>
+                        <span className="mt-0.5 text-base leading-none">{p.emoji}</span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-xs font-medium text-foreground">
-                            {c.title}
+                          <span className="flex items-center gap-1.5">
+                            {c.pinned && <Pin className="h-2.5 w-2.5 text-primary" />}
+                            <span className="block truncate text-xs font-medium text-foreground">
+                              {c.title}
+                            </span>
                           </span>
                           <span className="block truncate text-[10px] text-muted-foreground">
                             {new Date(c.updatedAt).toLocaleString(undefined, {
@@ -355,17 +438,29 @@ export function ChatApp() {
                             · {c.messages.length} msgs
                           </span>
                         </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConversation(c.id);
-                          }}
-                          className="rounded p-1 opacity-0 transition hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100"
-                          aria-label="Delete"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </button>
+                        <div className="flex items-center opacity-0 transition group-hover:opacity-100">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              togglePin(c.id);
+                            }}
+                            className="rounded p-1 text-muted-foreground transition hover:bg-[var(--surface-2)] hover:text-primary"
+                            aria-label={c.pinned ? "Unpin" : "Pin"}
+                          >
+                            {c.pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteConversation(c.id);
+                            }}
+                            className="rounded p-1 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
+                            aria-label="Delete"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
                     </li>
                   );
                 })}
@@ -373,15 +468,11 @@ export function ChatApp() {
             )}
           </div>
 
-          {/* Stats footer */}
           <div className="border-t border-border px-3 py-3">
             <div className="grid grid-cols-3 gap-2 text-center">
               <Stat label="Chats" value={stats.totalConvos} />
               <Stat label="Msgs" value={stats.totalMessages} />
-              <Stat
-                label="Latency"
-                value={stats.avgLatency ? `${stats.avgLatency}ms` : "—"}
-              />
+              <Stat label="Latency" value={stats.avgLatency ? `${stats.avgLatency}ms` : "—"} />
             </div>
             <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5">
               <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -389,9 +480,9 @@ export function ChatApp() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                Online
+                All systems normal
               </span>
-              <span className="text-[10px] text-muted-foreground">v1.0</span>
+              <span className="text-[10px] text-muted-foreground">v1.2</span>
             </div>
           </div>
         </div>
@@ -399,21 +490,16 @@ export function ChatApp() {
 
       {/* Main */}
       <main className="relative flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
-        <header className="z-10 flex items-center justify-between gap-3 border-b border-border px-4 py-3 backdrop-blur">
-          <div className="flex items-center gap-2 min-w-0">
+        <header className="z-10 flex items-center justify-between gap-3 border-b border-border bg-background/60 px-4 py-3 backdrop-blur">
+          <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => setSidebarOpen((v) => !v)}
               className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-[var(--surface-1)] hover:text-foreground"
               aria-label="Toggle sidebar"
             >
-              {sidebarOpen ? (
-                <PanelLeftClose className="h-4 w-4" />
-              ) : (
-                <PanelLeftOpen className="h-4 w-4" />
-              )}
+              {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
             </button>
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
               <div className="text-base leading-none">{persona.emoji}</div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">
@@ -428,24 +514,44 @@ export function ChatApp() {
           <div className="flex items-center gap-1.5">
             <Pill icon={<ShieldCheck className="h-3 w-3" />}>Secure</Pill>
             <button
-              onClick={() => {
-                if (!active || active.messages.length === 0) {
-                  toast.error("Nothing to export yet");
-                  return;
-                }
-                exportConversationToPdf(active);
-                toast.success("PDF downloaded");
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-[var(--surface-2)] hover:text-foreground"
-              title="Export conversation as PDF"
+              onClick={toggleTheme}
+              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-[var(--surface-1)] hover:text-foreground"
+              aria-label="Toggle theme"
+              title="Toggle theme"
             >
-              <Download className="h-3 w-3" /> Export PDF
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
+            <div className="relative">
+              <button
+                onClick={() => setExportOpen((v) => !v)}
+                onBlur={() => setTimeout(() => setExportOpen(false), 150)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:bg-[var(--surface-2)] hover:text-foreground"
+              >
+                <Download className="h-3 w-3" /> Export <ChevronDown className="h-3 w-3" />
+              </button>
+              {exportOpen && (
+                <div className="absolute right-0 top-full z-50 mt-1.5 w-44 overflow-hidden rounded-lg border border-border bg-[var(--surface-2)] shadow-soft animate-fade-up">
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={exportPdf}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition hover:bg-[var(--surface-1)]"
+                  >
+                    <FileDown className="h-3.5 w-3.5" /> Export as PDF
+                  </button>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={exportMarkdown}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition hover:bg-[var(--surface-1)]"
+                  >
+                    <FileText className="h-3.5 w-3.5" /> Export as Markdown
+                  </button>
+                </div>
+              )}
+            </div>
             <UserMenu />
           </div>
         </header>
 
-        {/* Scroll area */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           {isEmpty ? (
             <EmptyState
@@ -489,7 +595,13 @@ export function ChatApp() {
             }}
             className="mx-auto flex max-w-3xl items-end gap-2"
           >
-            <div className="flex flex-1 items-end rounded-2xl border border-border bg-[var(--surface-2)] px-4 py-2.5 shadow-soft transition focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20">
+            <div
+              className={`flex flex-1 items-end rounded-2xl border bg-[var(--surface-2)] px-4 py-2.5 shadow-soft transition focus-within:ring-2 ${
+                overLimit
+                  ? "border-destructive/60 focus-within:ring-destructive/20"
+                  : "border-border focus-within:border-primary/60 focus-within:ring-primary/20"
+              }`}
+            >
               <textarea
                 ref={inputRef}
                 value={input}
@@ -509,7 +621,7 @@ export function ChatApp() {
               <button
                 type="button"
                 onClick={stop}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/20 text-destructive transition hover:bg-destructive/30"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/15 text-destructive transition hover:bg-destructive/25"
                 aria-label="Stop"
               >
                 <StopCircle className="h-5 w-5" />
@@ -517,7 +629,7 @@ export function ChatApp() {
             ) : (
               <button
                 type="submit"
-                disabled={!input.trim()}
+                disabled={!input.trim() || overLimit}
                 className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                 aria-label="Send"
               >
@@ -527,13 +639,33 @@ export function ChatApp() {
           </form>
           <div className="mx-auto mt-2 flex max-w-3xl items-center justify-between text-[10px] text-muted-foreground">
             <span>
-              Press <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">Enter</kbd> to send ·{" "}
-              <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">Shift+Enter</kbd> for newline
+              <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">Enter</kbd> send ·{" "}
+              <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">Shift+Enter</kbd> newline ·{" "}
+              <kbd className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 font-mono">⌘K</kbd> search
             </span>
-            <span>Responses can be imperfect — please verify critical actions.</span>
+            <span className={overLimit ? "text-destructive" : ""}>
+              {charCount.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+            </span>
           </div>
         </div>
       </main>
+
+      {paletteOpen && (
+        <CommandPalette
+          conversations={sortedConvos}
+          search={search}
+          setSearch={setSearch}
+          onClose={() => setPaletteOpen(false)}
+          onPick={(id) => {
+            setActiveId(id);
+            setPaletteOpen(false);
+          }}
+          onNew={() => {
+            setPaletteOpen(false);
+            newConversation();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -559,10 +691,90 @@ function Pill({
   children: React.ReactNode;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-[var(--surface-1)] px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
+    <span className="hidden items-center gap-1 rounded-full border border-border bg-[var(--surface-1)] px-2.5 py-1 text-[10px] font-medium text-muted-foreground sm:inline-flex">
       {icon}
       {children}
     </span>
+  );
+}
+
+function CommandPalette({
+  conversations,
+  search,
+  setSearch,
+  onClose,
+  onPick,
+  onNew,
+}: {
+  conversations: Conversation[];
+  search: string;
+  setSearch: (s: string) => void;
+  onClose: () => void;
+  onPick: (id: string) => void;
+  onNew: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-[14vh] backdrop-blur-sm animate-fade-up"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-xl overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] shadow-elegant"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2 border-b border-border px-3.5 py-3">
+          <Command className="h-4 w-4 text-muted-foreground" />
+          <input
+            ref={ref}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search conversations or run a command…"
+            className="w-full bg-transparent text-sm focus:outline-none"
+          />
+          <kbd className="rounded bg-[var(--surface-1)] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">Esc</kbd>
+        </div>
+        <div className="max-h-[50vh] overflow-y-auto p-1.5">
+          <button
+            onClick={onNew}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-[var(--surface-1)]"
+          >
+            <Plus className="h-3.5 w-3.5 text-primary" />
+            <span>Start a new conversation</span>
+            <kbd className="ml-auto rounded bg-[var(--surface-1)] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘N</kbd>
+          </button>
+          {conversations.length > 0 && (
+            <>
+              <div className="px-3 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Conversations
+              </div>
+              {conversations.slice(0, 12).map((c) => {
+                const p = personaById(c.personaId);
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => onPick(c.id)}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition hover:bg-[var(--surface-1)]"
+                  >
+                    <span className="text-base leading-none">{p.emoji}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm">{c.title}</span>
+                      <span className="block truncate text-[10px] text-muted-foreground">
+                        {c.messages.length} msgs · {new Date(c.updatedAt).toLocaleDateString()}
+                      </span>
+                    </span>
+                    {c.pinned && <Pin className="h-3 w-3 text-primary" />}
+                  </button>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -578,22 +790,20 @@ function EmptyState({
   const persona = personaById(personaId);
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 py-10 sm:py-16">
-      {/* Hero */}
       <div className="flex flex-col items-center text-center animate-fade-up">
         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-[var(--surface-1)] px-3 py-1 text-[11px] font-medium text-muted-foreground">
           <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
           A calmer way to do customer support
         </div>
-        <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
+        <h1 className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
           Your <span className="text-gradient">support workspace</span>, refined.
         </h1>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
           Specialist agents, streaming answers, persistent history, and one-click
-          PDF exports — all in one minimal workspace.
+          exports — all in one minimal workspace.
         </p>
       </div>
 
-      {/* Persona picker */}
       <div className="mt-10 w-full">
         <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <Bot className="h-3.5 w-3.5" /> Choose your specialist
@@ -605,30 +815,26 @@ function EmptyState({
               <button
                 key={p.id}
                 onClick={() => onPickPersona(p.id)}
-                className={`group relative flex items-start gap-3 overflow-hidden rounded-2xl border p-4 text-left transition animate-fade-up ${
+                className={`group relative flex items-start gap-3 overflow-hidden rounded-xl border p-4 text-left transition animate-fade-up ${
                   isActive
                     ? "border-primary/60 bg-[var(--surface-2)] ring-glow"
                     : "border-border bg-[var(--surface-1)] hover:border-primary/40 hover:bg-[var(--surface-2)]"
                 }`}
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-aurora text-lg">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-primary text-lg">
                   {p.emoji}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="truncate text-sm font-semibold">
-                      {p.name}
-                    </div>
+                    <div className="truncate text-sm font-semibold">{p.name}</div>
                     {isActive && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary">
                         <Check className="h-2.5 w-2.5" /> Active
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    {p.tagline}
-                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{p.tagline}</div>
                 </div>
               </button>
             );
@@ -636,7 +842,6 @@ function EmptyState({
         </div>
       </div>
 
-      {/* Starters */}
       <div className="mt-8 w-full">
         <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <Zap className="h-3.5 w-3.5" /> Try a prompt
@@ -646,7 +851,7 @@ function EmptyState({
             <button
               key={s}
               onClick={() => onStarter(s)}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-[var(--surface-1)] px-4 py-3 text-left text-sm transition hover:border-primary/50 hover:bg-[var(--surface-2)] animate-fade-up"
+              className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-[var(--surface-1)] px-4 py-3 text-left text-sm transition hover:border-primary/50 hover:bg-[var(--surface-2)] animate-fade-up"
               style={{ animationDelay: `${i * 60 + 200}ms` }}
             >
               <span className="flex items-center gap-2.5">
@@ -659,12 +864,11 @@ function EmptyState({
         </div>
       </div>
 
-      {/* Footer features */}
       <div className="mt-12 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
         <FeatureBlock
           icon={<Zap className="h-4 w-4" />}
-          title="Token-streaming"
-          desc="Replies appear as the model thinks — no spinners, no wait."
+          title="Token streaming"
+          desc="Replies appear as the model thinks — no spinners, no waiting."
         />
         <FeatureBlock
           icon={<ShieldCheck className="h-4 w-4" />}
@@ -674,7 +878,7 @@ function EmptyState({
         <FeatureBlock
           icon={<Headphones className="h-4 w-4" />}
           title="Context memory"
-          desc="Each conversation remembers the full thread, locally."
+          desc="Every conversation remembers the full thread, securely."
         />
       </div>
     </div>
@@ -691,7 +895,7 @@ function FeatureBlock({
   desc: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-[var(--surface-1)]/60 p-4 backdrop-blur">
+    <div className="rounded-xl border border-border bg-[var(--surface-1)]/60 p-4 backdrop-blur">
       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground">
         {icon}
       </div>
@@ -722,10 +926,10 @@ function Bubble({
       }`}
     >
       <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
           isUser
-            ? "bg-[var(--surface-2)] text-foreground"
-            : "bg-gradient-aurora text-white shadow-glow"
+            ? "bg-[var(--surface-2)] text-foreground border border-border"
+            : "bg-gradient-primary text-primary-foreground shadow-glow"
         }`}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -775,7 +979,7 @@ function Bubble({
 function TypingBubble() {
   return (
     <div className="flex items-start gap-3 animate-fade-up">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-aurora text-white shadow-glow">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
         <Bot className="h-4 w-4" />
       </div>
       <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-border bg-[var(--surface-2)] px-4 py-3.5">
