@@ -12,7 +12,6 @@ export function exportConversationToPdf(c: Conversation) {
 
   const p = personaById(c.personaId);
 
-  // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(20, 20, 30);
@@ -61,18 +60,17 @@ export function exportConversationToPdf(c: Conversation) {
     if (m.role === "user") {
       writeBlock("YOU", m.content, [60, 60, 200]);
     } else {
-      writeBlock("ASSISTANT", m.content, [40, 130, 90]);
+      writeBlock("REPLY", m.content, [40, 130, 90]);
     }
   }
 
-  // Footer page numbers
   const total = doc.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
     doc.setTextColor(160);
     doc.text(`${i} / ${total}`, pageW - margin, pageH - 20, { align: "right" });
-    doc.text("FlowZint Support", margin, pageH - 20);
+    doc.text("NovaHelp", margin, pageH - 20);
   }
 
   const safe = (c.title || "conversation").replace(/[^a-z0-9-_ ]/gi, "").slice(0, 60).trim() || "conversation";
