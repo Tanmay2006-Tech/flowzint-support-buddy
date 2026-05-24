@@ -43,6 +43,12 @@ function LoginPage() {
             }}
           />
         </div>
+
+        <div className="mt-6 text-center">
+          <Link to="/agent-login" className="text-[11px] text-muted-foreground hover:text-foreground">
+            Are you a support agent? <span className="underline">Sign in here →</span>
+          </Link>
+        </div>
       </div>
     </div>
   );
