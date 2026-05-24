@@ -5,7 +5,6 @@ import {
   Loader2,
   RefreshCw,
   Inbox,
-  ShieldCheck,
   UserCheck,
   Search,
   CircleDot,
