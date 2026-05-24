@@ -41,6 +41,66 @@ export type Database = {
         }
         Relationships: []
       }
+      staff: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          assigned_email: string | null
+          created_at: string
+          id: string
+          message: string
+          priority: string
+          requester_email: string
+          requester_id: string | null
+          requester_name: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_email?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          priority?: string
+          requester_email: string
+          requester_id?: string | null
+          requester_name: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_email?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          priority?: string
+          requester_email?: string
+          requester_id?: string | null
+          requester_name?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
