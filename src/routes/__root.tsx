@@ -7,9 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { ClerkProvider } from "@clerk/tanstack-react-start";
 
 import appCss from "../styles.css?url";
-import { AuthProvider } from "@/lib/auth-context";
 
 function NotFoundComponent() {
   return (
@@ -73,10 +73,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "FlowZint Support — Modern customer support, reimagined" },
-      { name: "description", content: "A modern customer support workspace with specialist agents, instant streaming replies, and PDF export." },
-      { property: "og:title", content: "FlowZint Support" },
-      { property: "og:description", content: "Specialist agents, streaming answers, and human-handoff in a single workspace." },
+      { title: "NovaHelp — Modern customer support workspace" },
+      { name: "description", content: "NovaHelp is a calm, modern customer support workspace with specialist agents, live representative handoff, and PDF transcripts." },
+      { property: "og:title", content: "NovaHelp" },
+      { property: "og:description", content: "Specialist agents, live human handoff, and clean transcripts in one workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -111,10 +111,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <ClerkProvider>
+      <QueryClientProvider client={queryClient}>
         <Outlet />
-      </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 }

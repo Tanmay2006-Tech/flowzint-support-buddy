@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const FALLBACK_SYSTEM = `You are FlowZint Support — a friendly, knowledgeable AI assistant. Be concise, format answers with markdown, ask one clarifying question if needed, and never invent prices, policies, or personal data.`;
+const FALLBACK_SYSTEM = `You are NovaHelp — a friendly, knowledgeable customer support representative. Be concise, format answers with markdown, ask one clarifying question if needed, and never invent prices, policies, or personal data.`;
 
 export const Route = createFileRoute("/api/chat")({
   server: {

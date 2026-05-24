@@ -41,6 +41,7 @@ import {
 } from "@/lib/chat-store";
 import { DEFAULT_PERSONA, PERSONAS, personaById } from "@/lib/personas";
 import { UserMenu } from "@/components/UserMenu";
+import { HandoffDialog } from "@/components/HandoffDialog";
 import { exportConversationToPdf } from "@/lib/pdf-export";
 import { useTheme } from "@/lib/use-theme";
 
@@ -57,6 +58,7 @@ export function ChatApp() {
   const [stats, setStats] = useState({ totalMessages: 0, avgLatency: 0, totalConvos: 0 });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -362,13 +364,13 @@ export function ChatApp() {
       >
         <div className="flex h-full w-72 flex-col">
           <div className="flex items-center gap-2.5 px-4 py-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-              <Sparkles className="h-4 w-4 text-primary-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary text-base font-bold text-primary-foreground shadow-glow">
+              N
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-semibold tracking-tight">FlowZint</div>
+              <div className="text-sm font-semibold tracking-tight">NovaHelp</div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                Support
+                Support workspace
               </div>
             </div>
           </div>
@@ -512,6 +514,13 @@ export function ChatApp() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setHandoffOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-[11px] font-medium text-foreground transition hover:bg-[var(--surface-2)]"
+              title="Talk to a human"
+            >
+              <Headphones className="h-3 w-3 text-primary" /> Talk to a person
+            </button>
             <Pill icon={<ShieldCheck className="h-3 w-3" />}>Secure</Pill>
             <button
               onClick={toggleTheme}
@@ -666,6 +675,16 @@ export function ChatApp() {
           }}
         />
       )}
+
+      <HandoffDialog
+        open={handoffOpen}
+        onClose={() => setHandoffOpen(false)}
+        contextSummary={
+          active && active.messages.length > 0
+            ? `Conversation reference: "${active.title}"\n\nLatest message: ${active.messages[active.messages.length - 1].content.slice(0, 280)}`
+            : ""
+        }
+      />
     </div>
   );
 }

@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "anyone can create tickets" ON public.support_tickets;

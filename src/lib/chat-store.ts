@@ -11,7 +11,7 @@ export type Conversation = {
   pinned?: boolean;
 };
 
-const KEY = "flowzint.conversations.v1";
+const KEY = "novahelp.conversations.v1";
 
 export function loadAll(): Conversation[] {
   if (typeof window === "undefined") return [];
@@ -47,7 +47,7 @@ export function conversationToMarkdown(c: Conversation): string {
   lines.push("---");
   lines.push("");
   for (const m of c.messages) {
-    const who = m.role === "user" ? "**You**" : "**Assistant**";
+    const who = m.role === "user" ? "**You**" : "**Reply**";
     const when = new Date(m.ts).toLocaleString();
     lines.push(`### ${who} · ${when}`);
     lines.push("");
