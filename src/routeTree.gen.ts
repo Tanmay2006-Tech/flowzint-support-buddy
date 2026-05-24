@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AgentLoginRouteImport } from './routes/agent-login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
@@ -22,6 +23,11 @@ const StaffRoute = StaffRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentLoginRoute = AgentLoginRouteImport.update({
+  id: '/agent-login',
+  path: '/agent-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agent-login': typeof AgentLoginRoute
   '/login': typeof LoginRoute
   '/staff': typeof StaffRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent-login': typeof AgentLoginRoute
   '/login': typeof LoginRoute
   '/staff': typeof StaffRoute
   '/api/chat': typeof ApiChatRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agent-login': typeof AgentLoginRoute
   '/login': typeof LoginRoute
   '/staff': typeof StaffRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/staff' | '/api/chat'
+  fullPaths: '/' | '/agent-login' | '/login' | '/staff' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/staff' | '/api/chat'
-  id: '__root__' | '/' | '/login' | '/staff' | '/api/chat'
+  to: '/' | '/agent-login' | '/login' | '/staff' | '/api/chat'
+  id: '__root__' | '/' | '/agent-login' | '/login' | '/staff' | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentLoginRoute: typeof AgentLoginRoute
   LoginRoute: typeof LoginRoute
   StaffRoute: typeof StaffRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -85,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agent-login': {
+      id: '/agent-login'
+      path: '/agent-login'
+      fullPath: '/agent-login'
+      preLoaderRoute: typeof AgentLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentLoginRoute: AgentLoginRoute,
   LoginRoute: LoginRoute,
   StaffRoute: StaffRoute,
   ApiChatRoute: ApiChatRoute,
@@ -111,3 +129,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
