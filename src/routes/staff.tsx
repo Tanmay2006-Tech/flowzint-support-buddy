@@ -13,7 +13,6 @@ import {
   Clock,
   Mail,
   Send,
-  ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkStaff, claimFirstStaffSeat, listTickets, updateTicket } from "@/lib/tickets.functions";
@@ -198,7 +197,7 @@ function StaffInner() {
           >
             <RefreshCw className="h-4 w-4" />
           </button>
-          <UserButton afterSignOutUrl="/agent-login" />
+          <UserButton />
         </div>
       </header>
 
