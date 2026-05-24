@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useUser, SignedIn, SignedOut } from "@clerk/tanstack-react-start";
+import { useUser } from "@clerk/tanstack-react-start";
 import { ArrowLeft, Loader2, RefreshCw, Inbox, ShieldCheck, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { checkStaff, claimFirstStaffSeat, listTickets, updateTicket } from "@/lib/tickets.functions";
@@ -23,14 +23,18 @@ type Ticket = {
 };
 
 function StaffPage() {
+  const { isLoaded, isSignedIn } = useUser();
   return (
     <div className="min-h-screen bg-background">
-      <SignedOut>
-        <NotSignedIn />
-      </SignedOut>
-      <SignedIn>
+      {!isLoaded ? (
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : isSignedIn ? (
         <StaffInner />
-      </SignedIn>
+      ) : (
+        <NotSignedIn />
+      )}
     </div>
   );
 }

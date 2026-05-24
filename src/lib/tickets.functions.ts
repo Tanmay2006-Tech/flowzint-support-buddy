@@ -81,7 +81,11 @@ export const updateTicket = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!staff) throw new Error("Forbidden");
 
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      status?: "open" | "assigned" | "closed";
+      priority?: "low" | "normal" | "high" | "urgent";
+      assigned_email?: string | null;
+    } = {};
     if (data.status) patch.status = data.status;
     if (data.priority) patch.priority = data.priority;
     if (data.assign) {
