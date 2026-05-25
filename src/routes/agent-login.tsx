@@ -25,7 +25,7 @@ function AgentLoginPage() {
       try {
         const r = await checkStaff({ data: { email } });
         if (r.isStaff) {
-          navigate({ to: "/staff" });
+          navigate({ to: r.isAdmin ? "/admin" : "/staff" });
         } else {
           setDenied(true);
         }
