@@ -55,6 +55,7 @@ function StaffInner() {
   const { user } = useUser();
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "open" | "assigned" | "closed">("open");
@@ -68,6 +69,7 @@ function StaffInner() {
     try {
       const check = await checkStaff({ data: { email } });
       setIsStaff(check.isStaff);
+      setIsAdmin(check.isAdmin);
       if (check.isStaff) {
         const res = await listTickets({ data: { email } });
         setTickets(res.tickets as Ticket[]);
