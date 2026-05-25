@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { SignIn } from "@clerk/tanstack-react-start";
+import { DemoCredentials } from "@/components/DemoCredentials";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -42,6 +43,10 @@ function LoginPage() {
               },
             }}
           />
+        </div>
+
+        <div className="mt-6">
+          <DemoCredentials roles={["user"]} theme="light" />
         </div>
 
         <div className="mt-6 text-center">
