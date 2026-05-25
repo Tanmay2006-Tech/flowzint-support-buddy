@@ -83,11 +83,11 @@ function AgentLoginPage() {
 
         {/* Right auth panel */}
         <div className="flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur">
+          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#161b2e] p-8 shadow-2xl shadow-black/40">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-white">Sign in to console</h2>
-                <p className="mt-1 text-xs text-white/50">Agent credentials required.</p>
+                <p className="mt-1 text-xs text-white/70">Agent credentials required.</p>
               </div>
               <ShieldCheck className="h-6 w-6 text-emerald-400" />
             </div>
@@ -96,7 +96,7 @@ function AgentLoginPage() {
               <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-5 text-center">
                 <Lock className="mx-auto h-6 w-6 text-rose-400" />
                 <p className="mt-3 text-sm font-medium text-white">Access denied</p>
-                <p className="mt-1 text-xs text-white/60">
+                <p className="mt-1 text-xs text-white/70">
                   {user?.primaryEmailAddress?.emailAddress} isn't an authorized agent.
                 </p>
                 <Link
@@ -107,7 +107,7 @@ function AgentLoginPage() {
                 </Link>
               </div>
             ) : checking ? (
-              <div className="py-12 text-center text-sm text-white/60">Verifying credentials…</div>
+              <div className="py-12 text-center text-sm text-white/70">Verifying credentials…</div>
             ) : (
               <SignIn
                 routing="hash"
@@ -116,29 +116,29 @@ function AgentLoginPage() {
                 appearance={{
                   variables: {
                     colorPrimary: "#10b981",
-                    colorBackground: "transparent",
+                    colorBackground: "#111827",
                     colorText: "#ffffff",
-                    colorInputBackground: "rgba(255,255,255,0.04)",
-                    colorInputText: "#ffffff",
+                    colorInputBackground: "rgba(255,255,255,1)",
+                    colorInputText: "#111827",
                   },
                   elements: {
                     rootBox: "w-full",
-                    card: "bg-transparent shadow-none border-0 p-0",
+                    card: "bg-transparent shadow-none border-1 border-white/15 p-4 rounded-xl",
                     headerTitle: "hidden",
                     headerSubtitle: "hidden",
                     footer: "hidden",
-                    socialButtonsBlockButton: "bg-white/5 border-white/10 text-white hover:bg-white/10",
-                    formFieldInput: "bg-white/5 border-white/10 text-white",
+                    socialButtonsBlockButton: "bg-[#1a1f2e] border border-white/15 text-white hover:bg-[#252b3d]",
+                    formFieldInput: "bg-[#1a1f2e] border border-white/15 text-white placeholder-white/50",
                     formButtonPrimary: "bg-emerald-500 hover:bg-emerald-400 text-black font-semibold",
-                    dividerLine: "bg-white/10",
-                    dividerText: "text-white/40",
+                    dividerLine: "bg-white/15",
+                    dividerText: "text-white/60",
                   },
                 }}
               />
             )}
 
-            <div className="mt-6 border-t border-white/10 pt-4 text-center">
-              <Link to="/" className="text-[11px] text-white/50 hover:text-white">
+            <div className="mt-6 border-t border-white/15 pt-4 text-center">
+              <Link to="/" className="text-[11px] text-white/60 hover:text-white">
                 Not an agent? Go to customer portal
               </Link>
             </div>
