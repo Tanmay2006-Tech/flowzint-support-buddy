@@ -137,6 +137,10 @@ function AgentLoginPage() {
               />
             )}
 
+            <div className="mt-5">
+              <DemoCredentials roles={["agent", "admin"]} theme="dark" />
+            </div>
+
             <div className="mt-6 border-t border-white/15 pt-4 text-center">
               <Link to="/" className="text-[11px] text-white/60 hover:text-white">
                 Not an agent? Go to customer portal
