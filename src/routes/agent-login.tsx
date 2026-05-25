@@ -123,7 +123,7 @@ function AgentLoginPage() {
                   },
                   elements: {
                     rootBox: "w-full",
-                    card: "bg-transparent shadow-none border-1 border-white/15 p-4 rounded-xl",
+                    card: "bg-transparent shadow-none border border-white/15 p-4 rounded-xl",
                     headerTitle: "hidden",
                     headerSubtitle: "hidden",
                     footer: "hidden",
