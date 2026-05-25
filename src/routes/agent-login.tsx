@@ -152,12 +152,12 @@ function AgentLoginPage() {
 function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-emerald-400">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-400">
         {icon}
       </div>
       <div>
         <div className="text-sm font-medium text-white">{title}</div>
-        <div className="text-xs text-white/50">{desc}</div>
+        <div className="text-xs text-white/60">{desc}</div>
       </div>
     </div>
   );
