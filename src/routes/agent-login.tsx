@@ -52,7 +52,7 @@ function AgentLoginPage() {
       <div className="relative mx-auto grid min-h-screen max-w-6xl grid-cols-1 lg:grid-cols-2">
         {/* Left brand panel */}
         <div className="hidden flex-col justify-between p-12 lg:flex">
-          <Link to="/" className="flex items-center gap-2 text-white/80 hover:text-white">
+          <Link to="/" className="flex items-center gap-2 text-white/90 hover:text-white">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-sm font-bold text-black">
               N
             </div>
@@ -60,13 +60,13 @@ function AgentLoginPage() {
           </Link>
 
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-300">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-300">
               <Lock className="h-3 w-3" /> Restricted Access
             </div>
             <h1 className="text-4xl font-semibold leading-tight text-white">
               Agent Console
             </h1>
-            <p className="mt-3 max-w-sm text-sm text-white/60">
+            <p className="mt-3 max-w-sm text-sm text-white/70">
               Secure portal for NovaHelp support agents and admins. Manage tickets,
               respond to customers, and monitor live queues.
             </p>
@@ -78,7 +78,7 @@ function AgentLoginPage() {
             </div>
           </div>
 
-          <p className="text-[11px] text-white/40">© NovaHelp · Internal Use Only</p>
+          <p className="text-[11px] text-white/50">© NovaHelp · Internal Use Only</p>
         </div>
 
         {/* Right auth panel */}
