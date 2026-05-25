@@ -37,17 +37,17 @@ function AgentLoginPage() {
   }, [isLoaded, isSignedIn, user, navigate]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0d14]">
+    <div className="relative min-h-screen overflow-hidden bg-[#0f172a]">
       {/* Dark grid background */}
       <div
-        className="absolute inset-0 opacity-[0.04]"
+        className="absolute inset-0 opacity-[0.07]"
         style={{
           backgroundImage:
             "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
           backgroundSize: "40px 40px",
         }}
       />
-      <div className="absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
+      <div className="absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-emerald-500/15 blur-3xl" />
 
       <div className="relative mx-auto grid min-h-screen max-w-6xl grid-cols-1 lg:grid-cols-2">
         {/* Left brand panel */}
