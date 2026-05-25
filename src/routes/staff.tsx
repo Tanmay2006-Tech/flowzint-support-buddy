@@ -188,6 +188,14 @@ function StaffInner() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1.5 rounded-md border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-1 text-[11px] font-medium text-indigo-300 hover:bg-indigo-500/25"
+            >
+              Admin Dashboard
+            </Link>
+          )}
           <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Online
           </div>
