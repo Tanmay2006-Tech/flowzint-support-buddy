@@ -16,6 +16,7 @@ function AgentLoginPage() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
   const [denied, setDenied] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   useEffect(() => {
     const run = async () => {
