@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SignIn, useUser } from "@clerk/tanstack-react-start";
+import { SignIn, SignUp, useUser } from "@clerk/tanstack-react-start";
 import { DemoCredentials } from "@/components/DemoCredentials";
 import { ShieldCheck, Headphones, Activity, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
