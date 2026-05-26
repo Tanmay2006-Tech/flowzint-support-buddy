@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { SignIn } from "@clerk/tanstack-react-start";
+import { SignIn, SignUp } from "@clerk/tanstack-react-start";
 import { DemoCredentials } from "@/components/DemoCredentials";
+import { useState } from "react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
