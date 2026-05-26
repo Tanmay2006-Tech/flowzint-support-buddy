@@ -111,32 +111,85 @@ function AgentLoginPage() {
             ) : checking ? (
               <div className="py-12 text-center text-sm text-white/70">Verifying credentials…</div>
             ) : (
-              <SignIn
-                routing="hash"
-                signUpUrl="/agent-login"
-                forceRedirectUrl="/staff"
-                appearance={{
-                  variables: {
-                    colorPrimary: "#10b981",
-                    colorBackground: "#111827",
-                    colorText: "#ffffff",
-                    colorInputBackground: "rgba(255,255,255,1)",
-                    colorInputText: "#111827",
-                  },
-                  elements: {
-                    rootBox: "w-full",
-                    card: "bg-transparent shadow-none border border-white/15 p-4 rounded-xl",
-                    headerTitle: "hidden",
-                    headerSubtitle: "hidden",
-                    footer: "hidden",
-                    socialButtonsBlockButton: "bg-[#1a1f2e] border border-white/15 text-white hover:bg-[#252b3d]",
-                    formFieldInput: "bg-[#1a1f2e] border border-white/15 text-white placeholder-white/50",
-                    formButtonPrimary: "bg-emerald-500 hover:bg-emerald-400 text-black font-semibold",
-                    dividerLine: "bg-white/15",
-                    dividerText: "text-white/60",
-                  },
-                }}
-              />
+              <>
+                <div className="mb-4 flex gap-1 rounded-lg border border-white/10 bg-[#0f172a]/60 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setMode("signin")}
+                    className={`flex-1 rounded-md py-1.5 text-xs font-medium transition ${
+                      mode === "signin"
+                        ? "bg-emerald-500 text-black"
+                        : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode("signup")}
+                    className={`flex-1 rounded-md py-1.5 text-xs font-medium transition ${
+                      mode === "signup"
+                        ? "bg-emerald-500 text-black"
+                        : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    Create account
+                  </button>
+                </div>
+                {(() => {
+                  const appearance = {
+                    variables: {
+                      colorPrimary: "#10b981",
+                      colorBackground: "#111827",
+                      colorText: "#ffffff",
+                      colorTextSecondary: "rgba(255,255,255,0.75)",
+                      colorInputBackground: "#1a1f2e",
+                      colorInputText: "#ffffff",
+                    },
+                    elements: {
+                      rootBox: "w-full",
+                      card: "bg-transparent shadow-none border border-white/15 p-4 rounded-xl",
+                      headerTitle: "hidden",
+                      headerSubtitle: "hidden",
+                      footer: "hidden",
+                      socialButtonsBlockButton:
+                        "bg-[#1a1f2e] border border-white/15 text-white hover:bg-[#252b3d]",
+                      socialButtonsBlockButtonText: "text-white font-medium",
+                      formFieldLabel: "text-white/90",
+                      formFieldInput:
+                        "bg-[#1a1f2e] border border-white/20 text-white placeholder-white/40",
+                      formFieldInputShowPasswordButton: "text-white/70",
+                      formButtonPrimary:
+                        "bg-emerald-500 hover:bg-emerald-400 text-black font-semibold",
+                      formFieldAction: "text-emerald-400 hover:text-emerald-300",
+                      identityPreviewText: "text-white",
+                      identityPreviewEditButton: "text-emerald-400",
+                      dividerLine: "bg-white/15",
+                      dividerText: "text-white/60",
+                      formResendCodeLink: "text-emerald-400",
+                      otpCodeFieldInput: "bg-[#1a1f2e] border border-white/20 text-white",
+                      alertText: "text-white",
+                      formFieldHintText: "text-white/60",
+                      formFieldErrorText: "text-rose-300",
+                    },
+                  } as const;
+                  return mode === "signin" ? (
+                    <SignIn
+                      routing="hash"
+                      signUpUrl="/agent-login"
+                      forceRedirectUrl="/staff"
+                      appearance={appearance}
+                    />
+                  ) : (
+                    <SignUp
+                      routing="hash"
+                      signInUrl="/agent-login"
+                      forceRedirectUrl="/staff"
+                      appearance={appearance}
+                    />
+                  );
+                })()}
+              </>
             )}
 
             <div className="mt-5">
