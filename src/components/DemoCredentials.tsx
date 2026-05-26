@@ -7,17 +7,17 @@ export const DEMO_PASSWORD = "DemoPass!2026";
 
 export const DEMO_ACCOUNTS: Record<DemoRole, { email: string; label: string; desc: string }> = {
   user: {
-    email: "demo-user@novahelp.test",
+    email: "demo.user@novahelp.app",
     label: "Customer",
     desc: "Browse the chat support experience as a regular user.",
   },
   agent: {
-    email: "demo-agent@novahelp.test",
+    email: "demo.agent@novahelp.app",
     label: "Support Agent",
     desc: "Access the agent console and respond to tickets.",
   },
   admin: {
-    email: "demo-admin@novahelp.test",
+    email: "demo.admin@novahelp.app",
     label: "Administrator",
     desc: "Full access: team management, stats, ticket admin.",
   },
@@ -108,11 +108,11 @@ export function DemoCredentials({ roles = ["user", "agent", "admin"], theme = "l
       </div>
 
       <div className={`mt-3 rounded-md px-3 py-2 text-[11px] ${
-        isDark ? "bg-amber-500/10 text-amber-200/90" : "bg-amber-50 text-amber-800"
+        isDark ? "bg-emerald-500/10 text-emerald-200/90" : "bg-emerald-50 text-emerald-800"
       }`}>
         Shared password: <span className="font-mono font-semibold">{DEMO_PASSWORD}</span>
         <div className="mt-1 opacity-80">
-          First-time use: switch to "Sign up" in the form and register the demo email with this password. Subsequent logins work directly.
+          Accounts are pre-registered — just copy the email and password and sign in directly.
         </div>
       </div>
     </div>

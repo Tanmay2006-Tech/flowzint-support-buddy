@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { SignIn } from "@clerk/tanstack-react-start";
+import { SignIn, SignUp } from "@clerk/tanstack-react-start";
 import { DemoCredentials } from "@/components/DemoCredentials";
+import { useState } from "react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
@@ -31,18 +33,57 @@ function LoginPage() {
           </p>
         </div>
 
+        <div className="mb-4 flex gap-1 rounded-lg border border-border bg-muted/50 p-1">
+          <button
+            type="button"
+            onClick={() => setMode("signin")}
+            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition ${
+              mode === "signin"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("signup")}
+            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition ${
+              mode === "signup"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Create account
+          </button>
+        </div>
+
         <div className="flex justify-center">
-          <SignIn
-            routing="hash"
-            signUpUrl="/login"
-            forceRedirectUrl="/"
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                card: "shadow-soft border border-border bg-[var(--surface-1)]",
-              },
-            }}
-          />
+          {mode === "signin" ? (
+            <SignIn
+              routing="hash"
+              signUpUrl="/login"
+              forceRedirectUrl="/"
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  card: "shadow-soft border border-border bg-[var(--surface-1)]",
+                },
+              }}
+            />
+          ) : (
+            <SignUp
+              routing="hash"
+              signInUrl="/login"
+              forceRedirectUrl="/"
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  card: "shadow-soft border border-border bg-[var(--surface-1)]",
+                },
+              }}
+            />
+          )}
         </div>
 
         <div className="mt-6">
