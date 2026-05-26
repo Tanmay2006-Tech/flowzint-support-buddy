@@ -7,17 +7,17 @@ export const DEMO_PASSWORD = "DemoPass!2026";
 
 export const DEMO_ACCOUNTS: Record<DemoRole, { email: string; label: string; desc: string }> = {
   user: {
-    email: "demo-user@novahelp.test",
+    email: "demo.user@novahelp.app",
     label: "Customer",
     desc: "Browse the chat support experience as a regular user.",
   },
   agent: {
-    email: "demo-agent@novahelp.test",
+    email: "demo.agent@novahelp.app",
     label: "Support Agent",
     desc: "Access the agent console and respond to tickets.",
   },
   admin: {
-    email: "demo-admin@novahelp.test",
+    email: "demo.admin@novahelp.app",
     label: "Administrator",
     desc: "Full access: team management, stats, ticket admin.",
   },
