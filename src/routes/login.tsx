@@ -12,6 +12,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
