@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { LogIn } from "lucide-react";
-import { useUser, UserButton } from "@clerk/tanstack-react-start";
+import { useUser, UserButton } from "@clerk/clerk-react";
 
 export function UserMenu() {
   const { isSignedIn, isLoaded } = useUser();

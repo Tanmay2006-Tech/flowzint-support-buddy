@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useUser, UserButton } from "@clerk/tanstack-react-start";
+import { useUser, UserButton } from "@clerk/clerk-react";
 import {
   Loader2,
   RefreshCw,

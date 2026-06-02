@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Loader2, Headphones, CheckCircle2 } from "lucide-react";
-import { useUser } from "@clerk/tanstack-react-start";
+import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { createTicket } from "@/lib/tickets.functions";
 

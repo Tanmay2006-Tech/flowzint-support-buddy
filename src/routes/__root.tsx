@@ -5,11 +5,8 @@ import {
   createRootRouteWithContext,
   useRouter,
   HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
-import { ClerkProvider } from "@clerk/tanstack-react-start";
-
-import appCss from "../styles.css?url";
+import { ClerkProvider } from "@clerk/clerk-react";
 
 function NotFoundComponent() {
   return (
@@ -69,48 +66,23 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NovaHelp — Modern customer support workspace" },
-      { name: "description", content: "NovaHelp is a calm, modern customer support workspace with specialist agents, live representative handoff, and PDF transcripts." },
-      { property: "og:title", content: "NovaHelp" },
-      { property: "og:description", content: "Specialist agents, live human handoff, and clean transcripts in one workspace." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    console.error("Missing VITE_CLERK_PUBLISHABLE_KEY");
+  }
 
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={publishableKey ?? ""}>
       <QueryClientProvider client={queryClient}>
+        <HeadContent />
         <Outlet />
       </QueryClientProvider>
     </ClerkProvider>
