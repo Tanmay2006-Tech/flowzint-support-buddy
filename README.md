@@ -73,7 +73,7 @@ The app uses managed cloud services — the required env vars are auto-provision
 
 - `VITE_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- `LOVABLE_API_KEY` (AI gateway)
+- `LOVABLE_API_KEY` (AI model gateway)
 
 ## 🔐 Security Notes
 
