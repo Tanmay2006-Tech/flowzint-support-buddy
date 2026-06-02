@@ -65,8 +65,6 @@ bun install
 bun run dev
 ```
 
-Open <http://localhost:5173>.
-
 ### Environment
 
 The app uses managed cloud services — the required env vars are auto-provisioned in the development environment. For a manual setup you'd need:
