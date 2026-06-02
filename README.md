@@ -4,7 +4,7 @@ A modern, full-stack customer support workspace built for a hackathon. NovaHelp 
 
 ## ✨ Features
 
-- **AI chat assistant** — Specialist agents for billing, technical, and general questions, powered by Lovable AI Gateway (Gemini / GPT models).
+- **AI chat assistant** — Specialist agents for billing, technical, and general questions, powered by a multi-model AI gateway (Gemini / GPT models).
 - **Live human handoff** — Customers can request a real representative; conversations get persisted as tickets.
 - **PDF transcripts** — Export any conversation as a clean PDF.
 - **Authentication** — Clerk-powered sign-in / sign-up with Google OAuth.
