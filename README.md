@@ -209,23 +209,6 @@ Webhook signatures and protected routes are verified before execution.
 
 ---
 
-## 📸 Screenshots
-
-> Add screenshots here for:
-
-* Customer Portal
-* Agent Console
-* Admin Dashboard
-* AI Chat Interface
-
-Example:
-
-```md
-![Dashboard](./screenshots/dashboard.png)
-```
-
----
-
 ## 🌍 Deployment
 
 NovaHelp is optimized for edge deployment using Cloudflare Workers.
