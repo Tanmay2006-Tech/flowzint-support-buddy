@@ -75,16 +75,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+  const content = (
+    <QueryClientProvider client={queryClient}>
+      <HeadContent />
+      <Outlet />
+    </QueryClientProvider>
+  );
+
   if (!publishableKey) {
-    console.error("Missing VITE_CLERK_PUBLISHABLE_KEY");
+    console.warn("Missing VITE_CLERK_PUBLISHABLE_KEY — auth features disabled.");
+    return content;
   }
 
-  return (
-    <ClerkProvider publishableKey={publishableKey ?? ""}>
-      <QueryClientProvider client={queryClient}>
-        <HeadContent />
-        <Outlet />
-      </QueryClientProvider>
-    </ClerkProvider>
-  );
+  return <ClerkProvider publishableKey={publishableKey}>{content}</ClerkProvider>;
 }
