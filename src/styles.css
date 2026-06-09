@@ -161,10 +161,15 @@
   }
 
   body {
-    background-image:
-      radial-gradient(ellipse 70% 50% at 50% -10%, color-mix(in oklab, var(--primary) 14%, transparent), transparent),
-      radial-gradient(ellipse 50% 40% at 100% 100%, color-mix(in oklab, var(--accent) 8%, transparent), transparent);
-    background-attachment: fixed;
+    background-color: var(--color-background);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.011em;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 800;
+    letter-spacing: -0.03em;
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
